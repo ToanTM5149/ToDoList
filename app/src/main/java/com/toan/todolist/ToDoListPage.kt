@@ -117,7 +117,7 @@ fun ToDoItem(item: ToDo, onDelete : () -> Unit, onUpdate : (String) -> Unit) {
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                text = SimpleDateFormat("HH:mm:aa, mm/dd", Locale.ENGLISH).format(item.createdAt),
+                text = SimpleDateFormat("HH:mm:aa, dd/MM", Locale.ENGLISH).format(item.createdAt),
                 fontSize = 14.sp,
                 color = Color.LightGray
             )
