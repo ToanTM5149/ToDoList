@@ -25,9 +25,13 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -77,7 +81,8 @@ fun ToDoListPage (viewModel: ToDoViewModel) {
                     itemsIndexed(it) {index : Int, item: ToDo ->
                         ToDoItem(
                             item = item,
-                            onDelete = {viewModel.deleteToDo(item.id)}
+                            onDelete = {viewModel.deleteToDo(item.id)},
+                            onUpdate = {updatedText -> viewModel.updateToDo(item.copy(title = updatedText))}
                         )
                     }
 
@@ -92,8 +97,13 @@ fun ToDoListPage (viewModel: ToDoViewModel) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
-fun ToDoItem(item: ToDo, onDelete : () -> Unit) {
+fun ToDoItem(item: ToDo, onDelete : () -> Unit, onUpdate : (String) -> Unit) {
+
+    var isEditing by remember { mutableStateOf(false) }
+    var updatedText by remember { mutableStateOf(item.title) }
+
     Row (
         modifier = Modifier
             .fillMaxWidth()
@@ -102,21 +112,53 @@ fun ToDoItem(item: ToDo, onDelete : () -> Unit) {
             .background(MaterialTheme.colorScheme.primary)
             .padding(20.dp)
 
-            ) {
+    ) {
         Column (
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                text = SimpleDateFormat("HH:mm:aa, dd/mm", Locale.ENGLISH).format(item.createdAt),
+                text = SimpleDateFormat("HH:mm:aa, mm/dd", Locale.ENGLISH).format(item.createdAt),
                 fontSize = 14.sp,
                 color = Color.LightGray
             )
-            Text(
-                text = item.title,
-                fontSize = 20.sp,
-                color = Color.White
+            if (isEditing) {
+                OutlinedTextField(
+                    value = updatedText,
+                    onValueChange = {updatedText = it},
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onPreviewKeyEvent {
+                            if (it.key == Key.Enter) {
+                                onUpdate(updatedText)
+                                isEditing = false
+                                true
+                            } else {
+                                false
+                            }
+                        }
+                )
+            } else {
+                Text(
+                    text = item.title,
+                    fontSize = 20.sp,
+                    color = Color.White
+                )
+            }
+        }
+
+        IconButton(onClick = {
+            if(isEditing) {
+                onUpdate(updatedText)
+            }
+            isEditing = !isEditing
+        }) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_update),
+                contentDescription = "Update",
+                tint = Color.White
             )
         }
+
         IconButton(onClick = onDelete) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_delete),
