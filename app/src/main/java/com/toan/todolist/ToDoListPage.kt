@@ -135,7 +135,13 @@ fun ToDoItem(item: ToDo, onDelete : () -> Unit, onUpdate : (String) -> Unit) {
                             } else {
                                 false
                             }
-                        }
+                        },
+                    colors = androidx.compose.material3.TextFieldDefaults.outlinedTextFieldColors(
+                        textColor = Color.White,
+                        cursorColor = Color.White,
+                        focusedBorderColor = Color.White,
+                        unfocusedBorderColor = Color.White
+                    )
                 )
             } else {
                 Text(
